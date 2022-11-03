@@ -145,6 +145,8 @@ menu = pygame_menu.Menu('Настройки', width, height,
 
 menu.add.range_slider(f'Зазор между трубами', default=100, range_values=[80, 200], increment=10,
                       value_format=lambda n: str(int(n)), onchange=set_range)
+menu.add.range_slider(f'Расстояние между трубами', default=100, range_values=[80, 200], increment=10,
+                      value_format=lambda n: str(int(n)), onchange=set_range)
 
 menu.add.selector('Хитбоксы:', [('да', 1), ('нет', 0)], onchange=set_difficulty, default=1)
 menu.add.button('Играть', start_game)
