@@ -14,27 +14,29 @@ width, height = 640, 680
 screen = pygame.display.set_mode((width, height))
 
 settings = {
-    "dist": 100
+    "dist": 100,
+    "hitbox": False
 }
 
 
 class Bird(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, settings):
         super().__init__()
         self.image = pygame.image.load("img/bird.png")
         self.image = pygame.transform.rotozoom(self.image, 0, 0.1)
         self.rect = self.image.get_rect()
-
         self.rect.width = 68
         self.surface = pygame.Surface((self.rect.width, self.rect.height))
-
+        self.surface.fill((255, 0, 0))
         self.rect.center = (120, 50)
-        print(self.rect.height, self.rect.width)
         self.y_vel = 0
 
+        self.settings = settings
+
     def draw(self):
-        screen.blit(self.surface, (self.rect.x + 9, self.rect.y))
-        screen.blit(self.image, self.rect)
+        if self.settings["hitbox"]:
+            screen.blit(self.surface, self.rect)
+        screen.blit(self.image, (self.rect.x - 14, self.rect.y))
 
     def gravity(self):
         if self.rect.bottom >= height:
@@ -45,7 +47,6 @@ class Bird(pygame.sprite.Sprite):
         elif self.y_vel < 16:
             self.y_vel += 0.8
         self.rect.move_ip(0, self.y_vel)
-
 
     def jump(self):
         self.y_vel = -12
@@ -87,7 +88,7 @@ class Pipes(pygame.sprite.Sprite):
 def start_game():
     t = time.time()
     game_loop, update = True, False
-    bird = Bird()
+    bird = Bird(settings)
     pipes = []
     score = 0
 
@@ -126,9 +127,8 @@ def start_game():
         fpsClock.tick(fps)
 
 
-def set_difficulty(value, difficulty):
-    # Do the job here !
-    pass
+def set_difficulty(_, hitbox):
+    settings["hitbox"] = hitbox
 
 
 def start_the_game():
@@ -144,10 +144,8 @@ menu = pygame_menu.Menu('Настройки', width, height,
                         theme=pygame_menu.themes.THEME_GREEN)
 
 menu.add.range_slider(f'Зазор между трубами', default=100, range_values=[80, 200], increment=10,
-                      value_format=lambda n: str(int(n)), onchange=lambda n: set_range(n))
+                      value_format=lambda n: str(int(n)), onchange=set_range)
 
-menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=set_difficulty)
+menu.add.selector('Хитбоксы:', [('да', 1), ('нет', 0)], onchange=set_difficulty, default=1)
 menu.add.button('Играть', start_game)
 menu.mainloop(screen)
-# while True:
-#     start_game()
