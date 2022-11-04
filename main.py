@@ -15,7 +15,8 @@ screen = pygame.display.set_mode((width, height))
 
 settings = {
     "dist": 100,
-    "hitbox": False
+    "hitbox": False,
+    "del": 1500
 }
 
 
@@ -87,13 +88,13 @@ class Pipes(pygame.sprite.Sprite):
 
 def start_game():
     t = time.time()
-    game_loop, update = True, False
+    game_loop, d = True, False
     bird = Bird(settings)
     pipes = []
     score = 0
 
     pipe_event = pygame.USEREVENT + 1
-    pygame.time.set_timer(pipe_event, 1500)
+    pygame.time.set_timer(pipe_event, settings["del"])
 
     # Game loop.
     while game_loop:
@@ -108,10 +109,14 @@ def start_game():
             if event.type == pipe_event:
                 pipes.append(Pipes())
                 score += 1
+                if d is True and len(pipes) > 6:
+                    d = False
+                    del pipes[0]
+                else:
+                    d = True
 
         # Update.
-        if time.time() > t + 1 or update:
-            update = True
+        if time.time() > t + 1:
             bird.gravity()
             collisions = [i.move(bird.get_rect()) for i in pipes]
             if 1 in collisions:
@@ -131,23 +136,34 @@ def set_difficulty(_, hitbox):
     settings["hitbox"] = hitbox
 
 
-def start_the_game():
-    # Do the job here !
-    pass
-
-
 def set_range(n):
     settings["dist"] = int(n)
+
+
+def set_distance(n):
+    settings["del"] = int(n)
+
+
+def reset_settings():
+    global settings
+    settings = {
+        "dist": 100,
+        "hitbox": False,
+        "del": 1500
+    }
+    for i in menu.get_widgets():
+        i.reset_value()
 
 
 menu = pygame_menu.Menu('Настройки', width, height,
                         theme=pygame_menu.themes.THEME_GREEN)
 
-menu.add.range_slider(f'Зазор между трубами', default=100, range_values=[80, 200], increment=10,
+menu.add.range_slider('Зазор между трубами', default=settings["dist"], range_values=[80, 200], increment=10,
                       value_format=lambda n: str(int(n)), onchange=set_range)
-menu.add.range_slider(f'Расстояние между трубами', default=100, range_values=[80, 200], increment=10,
-                      value_format=lambda n: str(int(n)), onchange=set_range)
+menu.add.range_slider('Расстояние между трубами', default=settings["del"], range_values=[800, 2000], increment=10,
+                      value_format=lambda n: str(int(n)), onchange=set_distance)
 
-menu.add.selector('Хитбоксы:', [('да', 1), ('нет', 0)], onchange=set_difficulty, default=1)
+menu.add.selector('Хитбоксы:', [('да', True), ('нет', False)], onchange=set_difficulty, default=settings["hitbox"])
+menu.add.button("Сбросить настройки", reset_settings)
 menu.add.button('Играть', start_game)
 menu.mainloop(screen)
