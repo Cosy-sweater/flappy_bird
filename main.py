@@ -14,6 +14,8 @@ fpsClock = pygame.time.Clock()
 width, height = 640, 680
 screen = pygame.display.set_mode((width, height))
 
+score = 0
+
 settings = {
     "dist": 100,
     "hitbox": False,
@@ -96,6 +98,7 @@ class Pipes(pygame.sprite.Sprite):
 
 
 def start_game():
+    global score
     t = time.time()
     game_loop, d = True, False
     bird = Bird()
@@ -169,9 +172,15 @@ def reset_settings():
         i.reset_value()
 
 
+def update_menu():
+    menu_score.set_title(f'Счёт: {score}')
+
+
 menu = pygame_menu.Menu('Настройки', width, height,
                         theme=pygame_menu.themes.THEME_GREEN)
 
+menu_score = menu.add.label(f'Счёт: {score}')
+menu_score.set_title("1")
 menu.add.range_slider('Зазор между трубами', default=settings["dist"], range_values=[80, 200], increment=10,
                       value_format=lambda n: str(int(n)), onchange=set_range)
 menu.add.range_slider('Расстояние между трубами', default=settings["del"], range_values=[800, 2000], increment=10,
@@ -180,4 +189,4 @@ menu.add.range_slider('Расстояние между трубами', default=
 menu.add.selector('Хитбоксы:', [('да', True), ('нет', False)], onchange=set_difficulty, default=1)
 menu.add.button("Сбросить настройки", reset_settings)
 menu.add.button('Играть', start_game)
-menu.mainloop(screen)
+menu.mainloop(screen, update_menu)
