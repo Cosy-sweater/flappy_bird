@@ -7,6 +7,8 @@ from pygame.locals import *
 
 pygame.init()
 pygame.font.init()
+pygame.display.set_caption('Flappy bird')
+pygame.display.set_icon(pygame.image.load("img/icon.png"))
 
 fps = 60
 fpsClock = pygame.time.Clock()
@@ -31,17 +33,22 @@ class Bird(pygame.sprite.Sprite):
         self.image = pygame.transform.rotozoom(self.image, 0, 0.1)
         self.rect = self.image.get_rect()
         self.rect.width = 68
+        self.rect.height -= 10
         self.surface = pygame.Surface((self.rect.width, self.rect.height))
         self.surface.fill((255, 227, 0))
         self.rect.center = (120, 50)
         self.y_vel = 0
+        self.rotation = 0
+        self.temp_image = None
 
         self.settings = settings
 
     def draw(self):
         if self.settings["hitbox"]:
             screen.blit(self.surface, self.rect)
-        screen.blit(self.image, (self.rect.x - 14, self.rect.y))
+        self.rotation = (self.rotation * 2 + self.y_vel * -1.7) / 3
+        self.temp_image = pygame.transform.rotate(self.image, self.rotation)
+        screen.blit(self.temp_image, (self.rect.x - 14, self.rect.y - 15))
 
     def gravity(self):
         if self.rect.bottom >= height:
@@ -105,12 +112,16 @@ def start_game():
     pipes = []
     score = -1
 
+    bg_displacement = 0
+    bg_image = pygame.image.load("img/bg.jpg")
+
     pipe_event = pygame.USEREVENT + 1
     pygame.time.set_timer(pipe_event, settings["del"])
 
     # Game loop.
     while game_loop:
         screen.fill((112, 195, 244))
+        bg_displacement -= 2
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -137,6 +148,9 @@ def start_game():
             pipes.clear()
             continue
         # Draw.
+        screen.blit(bg_image, (bg_displacement - 1920, -20))
+        screen.blit(bg_image, (bg_displacement, -20))
+        bg_displacement %= 1920
         bird.draw()
         [i.draw() for i in pipes]
         if score >= 0:
@@ -147,6 +161,11 @@ def start_game():
 
         pygame.display.flip()
         fpsClock.tick(fps)
+    transition = pygame.Surface((640, 680))
+    for i in range(75):
+        screen.blit(transition, (0, i * 12 - 680))
+        pygame.display.flip()
+        fpsClock.tick(fps * 2)
 
 
 def set_difficulty(_, hitbox):
