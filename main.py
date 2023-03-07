@@ -106,6 +106,10 @@ class Pipes(pygame.sprite.Sprite):
 
 def start_game():
     global score
+
+    for i in menu.get_widgets():
+        i.hide()
+
     t = time.time()
     game_loop, d = True, False
     bird = Bird()
@@ -129,6 +133,9 @@ def start_game():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 bird.jump()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                    bird.jump()
             if event.type == pipe_event:
                 pipes.append(Pipes())
                 score += 1
@@ -166,6 +173,9 @@ def start_game():
         screen.blit(transition, (0, i * 12 - 680))
         pygame.display.flip()
         fpsClock.tick(fps * 2)
+
+    for i in menu.get_widgets():
+        i.show()
 
 
 def set_difficulty(_, hitbox):
